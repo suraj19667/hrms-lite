@@ -1,11 +1,13 @@
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from .serializers import EmployeeSerializer
 from .services import EmployeeService
 
 
 @api_view(['GET', 'POST'])
+@permission_classes([AllowAny])  # Disable authentication for this endpoint
 def employee_list_create(request):
     """
     Handle both GET and POST requests for employees.
@@ -66,6 +68,7 @@ def employee_list_create(request):
 
 
 @api_view(['DELETE'])
+@permission_classes([AllowAny])  # Disable authentication for this endpoint
 def delete_employee(request, employee_id):
     """
     Delete an employee by ID.

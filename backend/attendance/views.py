@@ -1,11 +1,13 @@
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from .serializers import AttendanceCreateSerializer
 from .services import AttendanceService
 
 
 @api_view(['POST'])
+@permission_classes([AllowAny])  # Disable authentication for this endpoint
 def create_attendance(request):
     """
     Create a new attendance record.
@@ -47,6 +49,7 @@ def create_attendance(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])  # Disable authentication for this endpoint
 def get_employee_attendance(request, employee_id):
     """
     Get all attendance records for a specific employee.
@@ -69,6 +72,7 @@ def get_employee_attendance(request, employee_id):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])  # Disable authentication for this endpoint
 def list_all_attendance(request):
     """
     Get all attendance records.
@@ -93,6 +97,7 @@ def list_all_attendance(request):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])  # Disable authentication for this endpoint
 def dashboard_stats(request):
     """
     Get dashboard statistics.
