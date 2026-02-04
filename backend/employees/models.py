@@ -32,6 +32,7 @@ class Employee(models.Model):
     )
 
     class Meta:
+        managed = False  # Don't create table in SQLite - using MongoDB
         db_table = 'employees'
         ordering = ['-created_at']
         verbose_name = 'Employee'

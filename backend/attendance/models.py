@@ -35,6 +35,7 @@ class Attendance(models.Model):
     )
 
     class Meta:
+        managed = False  # Don't create table in SQLite - using MongoDB
         db_table = 'attendance'
         ordering = ['-date', 'employee']
         verbose_name = 'Attendance'
