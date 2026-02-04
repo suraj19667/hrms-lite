@@ -142,6 +142,29 @@ production_frontend = "https://hrms-lite-nine-gamma.vercel.app"
 if production_frontend not in CORS_ALLOWED_ORIGINS:
     CORS_ALLOWED_ORIGINS.append(production_frontend)
 
+# Explicitly allow all HTTP methods needed
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+# Explicitly allow headers needed for API requests
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 # Security settings - CSRF_TRUSTED_ORIGINS needs both frontend and backend URLs
 CSRF_TRUSTED_ORIGINS = os.getenv(
     "CSRF_TRUSTED_ORIGINS",
@@ -159,4 +182,38 @@ for origin in production_origins:
         CSRF_TRUSTED_ORIGINS.append(origin)
 
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'employees': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+}
 

@@ -83,7 +83,10 @@ const Employees = () => {
         setFormErrors({});
 
         try {
-            await employeeAPI.create(formData);
+            console.log('Submitting employee data:', formData);
+            const response = await employeeAPI.create(formData);
+            console.log('Employee created:', response.data);
+
             // Reset form and refresh list
             setFormData({
                 employee_id: '',
@@ -95,8 +98,24 @@ const Employees = () => {
             fetchEmployees();
         } catch (err) {
             console.error('Error creating employee:', err);
+
+            // Handle different error response formats
             if (err.response?.data) {
-                setFormErrors(err.response.data);
+                const errorData = err.response.data;
+
+                // Handle validation errors from backend
+                if (errorData.details) {
+                    setFormErrors(errorData.details);
+                } else if (errorData.error) {
+                    // Single error message
+                    setFormErrors({ general: errorData.error });
+                } else {
+                    // Unknown format
+                    setFormErrors({ general: JSON.stringify(errorData) });
+                }
+            } else if (err.message) {
+                // Network error or other issues
+                setFormErrors({ general: `Network error: ${err.message}` });
             } else {
                 setFormErrors({ general: 'Failed to create employee. Please try again.' });
             }

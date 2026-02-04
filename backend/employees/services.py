@@ -3,8 +3,11 @@ Employee service using MongoDB directly via pymongo.
 Replaces Django ORM for MongoDB operations.
 """
 from datetime import datetime
+import logging
 from bson import ObjectId
 from hrms.mongodb import mongodb
+
+logger = logging.getLogger(__name__)
 
 
 class EmployeeService:
@@ -15,24 +18,36 @@ class EmployeeService:
     @staticmethod
     def create(employee_data):
         """Create a new employee."""
-        collection = mongodb.get_collection(EmployeeService.COLLECTION_NAME)
-        
-        # Check for duplicates
-        if collection.find_one({'employee_id': employee_data['employee_id']}):
-            raise ValueError('Employee with this employee_id already exists')
-        
-        if collection.find_one({'email': employee_data['email']}):
-            raise ValueError('Employee with this email already exists')
-        
-        # Add timestamp
-        employee_data['created_at'] = datetime.utcnow()
-        
-        # Insert and return
-        result = collection.insert_one(employee_data)
-        employee_data['id'] = str(result.inserted_id)
-        employee_data['_id'] = str(result.inserted_id)
-        
-        return employee_data
+        try:
+            logger.info(f"Creating employee with data: {employee_data}")
+            collection = mongodb.get_collection(EmployeeService.COLLECTION_NAME)
+            
+            # Check for duplicates
+            if collection.find_one({'employee_id': employee_data['employee_id']}):
+                logger.warning(f"Duplicate employee_id: {employee_data['employee_id']}")
+                raise ValueError('Employee with this employee_id already exists')
+            
+            if collection.find_one({'email': employee_data['email']}):
+                logger.warning(f"Duplicate email: {employee_data['email']}")
+                raise ValueError('Employee with this email already exists')
+            
+            # Add timestamp
+            employee_data['created_at'] = datetime.utcnow()
+            
+            # Insert and return
+            logger.info(f"Inserting employee into MongoDB: {employee_data['employee_id']}")
+            result = collection.insert_one(employee_data)
+            employee_data['id'] = str(result.inserted_id)
+            employee_data['_id'] = str(result.inserted_id)
+            
+            logger.info(f"Employee created with ID: {result.inserted_id}")
+            return employee_data
+        except ValueError:
+            # Re-raise ValueError as-is
+            raise
+        except Exception as e:
+            logger.exception(f"Error creating employee: {str(e)}")
+            raise Exception(f"Database error: {str(e)}")
 
     @staticmethod
     def get_all():
