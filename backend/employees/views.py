@@ -22,9 +22,12 @@ def employee_list_create(request):
     """
     if request.method == 'GET':
         try:
+            logger.info("GET /api/employees/ - Fetching all employees")
             employees = EmployeeService.get_all()
+            logger.info(f"GET /api/employees/ - Retrieved {len(employees)} employees")
             return Response(employees, status=status.HTTP_200_OK)
         except Exception as e:
+            logger.exception(f"GET /api/employees/ - Failed to fetch employees: {str(e)}")
             return Response(
                 {"error": f"Failed to fetch employees: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -44,11 +47,15 @@ def employee_list_create(request):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        # Log the data types and keys for debugging
+        logger.info(f"POST /api/employees/ - Data keys: {list(request.data.keys())}")
+        
         serializer = EmployeeSerializer(data=request.data)
         
         if serializer.is_valid():
             try:
                 logger.info(f"POST /api/employees/ - Validation passed, creating employee")
+                logger.info(f"POST /api/employees/ - Validated data: {serializer.validated_data}")
                 employee = EmployeeService.create(serializer.validated_data)
                 logger.info(f"Employee created successfully: {employee.get('employee_id')}")
                 return Response(
@@ -69,6 +76,11 @@ def employee_list_create(request):
                 elif 'email' in error_message.lower():
                     return Response(
                         {"error": "An employee with this email already exists."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                elif 'missing' in error_message.lower():
+                    return Response(
+                        {"error": error_message},
                         status=status.HTTP_400_BAD_REQUEST
                     )
                 else:

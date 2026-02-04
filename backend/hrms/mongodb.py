@@ -76,8 +76,14 @@ class MongoDB:
 
     def get_collection(self, collection_name):
         """Get a specific collection with connection verification."""
-        db = self.get_db()
-        return db[collection_name]
+        try:
+            db = self.get_db()
+            if db is None:
+                raise ValueError("MongoDB database connection not available")
+            return db[collection_name]
+        except Exception as e:
+            logger.error(f"Error getting collection {collection_name}: {str(e)}")
+            raise
 
     def close(self):
         """Close MongoDB connection."""
