@@ -17,10 +17,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-change-this")
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
+# Parse ALLOWED_HOSTS - include Render domain
 ALLOWED_HOSTS = os.getenv(
     "ALLOWED_HOSTS",
     "localhost,127.0.0.1"
 ).split(",")
+
+# Add render domain if not in ALLOWED_HOSTS
+if "*.onrender.com" not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append("*.onrender.com")
 
 # Application definition
 INSTALLED_APPS = [
@@ -117,16 +122,25 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [],  # No permissions for now
 }
 
-# CORS Configuration for Production
+# CORS Configuration for Production (DO NOT rely on DEBUG)
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
+# Parse CORS_ALLOWED_ORIGINS from environment variable
 CORS_ALLOWED_ORIGINS = os.getenv(
     "CORS_ALLOWED_ORIGINS",
     "http://localhost:5173,http://localhost:3000"
 ).split(",")
 
-# Security settings
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+# Remove empty strings from split
+CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS if origin.strip()]
+
+# Security settings - CSRF_TRUSTED_ORIGINS needs both frontend and backend URLs
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    "CSRF_TRUSTED_ORIGINS",
+    "http://localhost:5173,http://localhost:3000,http://localhost:8000"
+).split(",")
+CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in CSRF_TRUSTED_ORIGINS if origin.strip()]
+
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 

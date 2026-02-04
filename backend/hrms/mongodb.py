@@ -23,10 +23,21 @@ class MongoDB:
         if self._client is None:
             mongo_uri = settings.MONGO_URI
             if not mongo_uri:
-                raise ValueError("MONGO_URI not set in environment variables")
+                error_msg = "MONGO_URI not set in environment variables"
+                print(f"ERROR: {error_msg}")
+                raise ValueError(error_msg)
             
-            self._client = MongoClient(mongo_uri)
-            self._db = self._client[settings.MONGO_DB_NAME]
+            try:
+                print(f"Connecting to MongoDB: {settings.MONGO_DB_NAME}")
+                self._client = MongoClient(mongo_uri)
+                self._db = self._client[settings.MONGO_DB_NAME]
+                # Test connection
+                self._client.admin.command('ping')
+                print("MongoDB connection successful")
+            except Exception as e:
+                error_msg = f"Failed to connect to MongoDB: {str(e)}"
+                print(f"ERROR: {error_msg}")
+                raise ValueError(error_msg)
         return self._db
 
     def get_db(self):
