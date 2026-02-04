@@ -21,12 +21,12 @@ class MongoDB:
     def connect(self):
         """Establish connection to MongoDB Atlas."""
         if self._client is None:
-            mongo_uri = settings.MONGODB_URI
+            mongo_uri = settings.MONGO_URI
             if not mongo_uri:
                 raise ValueError("MONGO_URI not set in environment variables")
             
             self._client = MongoClient(mongo_uri)
-            self._db = self._client[settings.MONGODB_NAME]
+            self._db = self._client[settings.MONGO_DB_NAME]
         return self._db
 
     def get_db(self):
