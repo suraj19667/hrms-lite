@@ -28,11 +28,22 @@ def employee_list_create(request):
             )
     
     elif request.method == 'POST':
+        # Log incoming request for debugging
+        print(f"POST /api/employees/ - Data: {request.data}")
+        
+        # Ensure we're getting JSON data
+        if not request.data:
+            return Response(
+                {"error": "Request body cannot be empty"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         serializer = EmployeeSerializer(data=request.data)
         
         if serializer.is_valid():
             try:
                 employee = EmployeeService.create(serializer.validated_data)
+                print(f"Employee created successfully: {employee.get('employee_id')}")
                 return Response(
                     {
                         "message": "Employee created successfully",
@@ -42,6 +53,7 @@ def employee_list_create(request):
                 )
             except ValueError as e:
                 error_message = str(e)
+                print(f"ValueError creating employee: {error_message}")
                 if 'employee_id' in error_message.lower():
                     return Response(
                         {"error": "An employee with this employee ID already exists."},
@@ -58,11 +70,14 @@ def employee_list_create(request):
                         status=status.HTTP_400_BAD_REQUEST
                     )
             except Exception as e:
+                print(f"Exception creating employee: {str(e)}")
                 return Response(
                     {"error": f"Failed to create employee: {str(e)}"},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
         
+        # Log validation errors
+        print(f"Validation errors: {serializer.errors}")
         return Response(
             {"error": "Validation failed", "details": serializer.errors},
             status=status.HTTP_400_BAD_REQUEST

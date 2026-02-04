@@ -23,9 +23,11 @@ ALLOWED_HOSTS = os.getenv(
     "localhost,127.0.0.1"
 ).split(",")
 
-# Add render domain if not in ALLOWED_HOSTS
-if "*.onrender.com" not in ALLOWED_HOSTS:
-    ALLOWED_HOSTS.append("*.onrender.com")
+# Add production domains
+production_hosts = ["*.onrender.com", "hrms-lite-zhj6.onrender.com", ".vercel.app"]
+for host in production_hosts:
+    if host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(host)
 
 # Application definition
 INSTALLED_APPS = [
@@ -135,12 +137,26 @@ CORS_ALLOWED_ORIGINS = os.getenv(
 # Remove empty strings from split
 CORS_ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ALLOWED_ORIGINS if origin.strip()]
 
+# Add production Vercel URL if not already present
+production_frontend = "https://hrms-lite-nine-gamma.vercel.app"
+if production_frontend not in CORS_ALLOWED_ORIGINS:
+    CORS_ALLOWED_ORIGINS.append(production_frontend)
+
 # Security settings - CSRF_TRUSTED_ORIGINS needs both frontend and backend URLs
 CSRF_TRUSTED_ORIGINS = os.getenv(
     "CSRF_TRUSTED_ORIGINS",
     "http://localhost:5173,http://localhost:3000,http://localhost:8000"
 ).split(",")
 CSRF_TRUSTED_ORIGINS = [origin.strip() for origin in CSRF_TRUSTED_ORIGINS if origin.strip()]
+
+# Add production URLs
+production_origins = [
+    "https://hrms-lite-nine-gamma.vercel.app",
+    "https://hrms-lite-zhj6.onrender.com"
+]
+for origin in production_origins:
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 SECURE_CROSS_ORIGIN_OPENER_POLICY = None
 

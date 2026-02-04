@@ -1,70 +1,71 @@
-import axios from 'axios';
+import axios from "axios";
 
-// Create axios instance with base URL from environment variable
+// ❗ IMPORTANT: No localhost fallback in production
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+if (!API_BASE_URL) {
+  console.error("VITE_API_BASE_URL is not defined");
+}
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    timeout: 10000, // 10 second timeout
+  baseURL: API_BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+  timeout: 10000,
 });
 
-// Log API base URL for debugging
-console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000');
+// Debug
+console.log("API Base URL:", API_BASE_URL);
 
-// Add response interceptor for better error handling
+// Response interceptor
 api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        if (error.response) {
-            // Server responded with error status
-            console.error('API Error Response:', {
-                status: error.response.status,
-                data: error.response.data,
-                url: error.config?.url,
-            });
-        } else if (error.request) {
-            // Request was made but no response received
-            console.error('API No Response:', {
-                url: error.config?.url,
-                message: error.message,
-            });
-        } else {
-            // Error in request setup
-            console.error('API Request Error:', error.message);
-        }
-        return Promise.reject(error);
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      console.error("API ERROR:", {
+        status: error.response.status,
+        data: error.response.data,
+        url: error.config.url,
+      });
+    } else {
+      console.error("API NETWORK ERROR:", error.message);
     }
+    return Promise.reject(error);
+  }
 );
 
-// Employee API endpoints
+// ================= EMPLOYEE API =================
 export const employeeAPI = {
-    // Get all employees
-    getAll: () => api.get('/api/employees/'),
-
-    // Create a new employee
-    create: (data) => api.post('/api/employees/', data),
-
-    // Delete an employee
-    delete: (id) => api.delete(`/api/employees/${id}/`),
+  getAll: () => api.get("/api/employees/"),
+  create: (data) => {
+    console.log("POST /api/employees/ - Request data:", data);
+    console.log("API Base URL:", API_BASE_URL);
+    return api.post("/api/employees/", data).then(
+      (response) => {
+        console.log("POST /api/employees/ - Success:", response.data);
+        return response;
+      },
+      (error) => {
+        console.error("POST /api/employees/ - Failed:", {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message,
+          url: error.config?.url,
+        });
+        throw error;
+      }
+    );
+  },
+  delete: (id) => api.delete(`/api/employees/${id}/`),
 };
 
-// Attendance API endpoints
+// ================= ATTENDANCE API =================
 export const attendanceAPI = {
-    // Mark attendance
-    mark: (data) => api.post('/api/attendance/', data),
-
-    // Get all attendance records
-    getAll: (date = null) => {
-        const params = date ? { date } : {};
-        return api.get('/api/attendance/all/', { params });
-    },
-
-    // Get attendance for specific employee
-    getByEmployee: (employeeId, date = null) => {
-        const params = date ? { date } : {};
-        return api.get(`/api/attendance/${employeeId}/`, { params });
-    },
+  mark: (data) => api.post("/api/attendance/"),
+  getAll: () => api.get("/api/attendance/all/"),
+  getByEmployee: (employeeId) =>
+    api.get(`/api/attendance/${employeeId}/`),
 };
 
 export default api;
