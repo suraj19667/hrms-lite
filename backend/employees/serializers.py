@@ -1,16 +1,17 @@
 from rest_framework import serializers
-from .models import Employee
 
 
-class EmployeeSerializer(serializers.ModelSerializer):
+class EmployeeSerializer(serializers.Serializer):
     """
-    Serializer for Employee model with validation.
+    Serializer for Employee data with validation.
+    Uses MongoDB directly via service layer, no Django ORM.
     """
-    
-    class Meta:
-        model = Employee
-        fields = ['id', 'employee_id', 'full_name', 'email', 'department', 'created_at']
-        read_only_fields = ['id', 'created_at']
+    id = serializers.CharField(read_only=True)
+    employee_id = serializers.CharField(max_length=50, required=True)
+    full_name = serializers.CharField(max_length=200, required=True)
+    email = serializers.EmailField(required=True)
+    department = serializers.CharField(max_length=100, required=True)
+    created_at = serializers.DateTimeField(read_only=True)
 
     def validate_employee_id(self, value):
         """
@@ -34,11 +35,6 @@ class EmployeeSerializer(serializers.ModelSerializer):
         """
         if not value or not value.strip():
             raise serializers.ValidationError("Email cannot be empty.")
-        
-        # Check uniqueness for updates
-        if self.instance:
-            if Employee.objects.exclude(pk=self.instance.pk).filter(email=value).exists():
-                raise serializers.ValidationError("An employee with this email already exists.")
         
         return value.strip().lower()
 
